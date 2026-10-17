@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+contracts/out/
+contracts/cache/
+lib/
+.arc-studio/
+release-*
+*.tgz
+*.b64

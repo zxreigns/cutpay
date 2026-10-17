@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0B0B0C;
+  --surface: #141416;
+  --surface-raised: #1A1A1E;
+  --border: #26262A;
+  --ink: #F4F1EA;
+  --ink-2: #C8C4BC;
+  --muted: #9A9A9F;
+  --accent: #F5B227;
+  --accent-hover: #FFC84A;
+  --success: #7BD88F;
+  --danger: #F26B6B;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100dvh;
+}
+
+.display {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.03em;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', Menlo, monospace;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* Sonner toast dark theme */
+[data-sonner-toaster] {
+  --normal-bg: #1A1A1E;
+  --normal-border: #26262A;
+  --normal-text: #F4F1EA;
+  --success-bg: #1A2520;
+  --success-border: #7BD88F;
+  --success-text: #7BD88F;
+  --error-bg: #221818;
+  --error-border: #F26B6B;
+  --error-text: #F26B6B;
+}
