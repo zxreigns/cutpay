@@ -158,6 +158,19 @@ export function instantWalletConnector() {
       return Promise.resolve(ACTIVE_CHAIN)
     },
 
+    /**
+     * getClient — wagmi v2 prefers this over getProvider for getConnectorClient.
+     * Returns the viem WalletClient directly so wagmi uses local signing instead
+     * of forwarding eth_sendTransaction to the public RPC (which cannot sign).
+     */
+    getClient() {
+      const key = loadKey()
+      if (!key) return Promise.reject(new Error('No instant wallet in storage'))
+      const { client } = ensureClient(key)
+      // Cast needed: wagmi's Client generic is stricter than WalletClient at the call site.
+      return Promise.resolve(client as unknown as import('viem').Client)
+    },
+
     getProvider() {
       const key = loadKey()
       if (!key) {

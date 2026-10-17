@@ -43,11 +43,19 @@ export default function NewJobPage() {
   })
 
   // Approve tx
-  const { writeContract: approveWrite, data: approveHash, isPending: approvePending } = useWriteContract()
+  const { writeContract: approveWrite, data: approveHash, isPending: approvePending } = useWriteContract({
+    mutation: {
+      onError: (e) => { toast.error(parseOnchainError(e)); setStep('idle') },
+    },
+  })
   const { isLoading: approveConfirming, isSuccess: approveSuccess } = useWaitForTransactionReceipt({ hash: approveHash })
 
   // Create tx
-  const { writeContract: createWrite, data: createHash, isPending: createPending } = useWriteContract()
+  const { writeContract: createWrite, data: createHash, isPending: createPending } = useWriteContract({
+    mutation: {
+      onError: (e) => { toast.error(parseOnchainError(e)); setStep('idle') },
+    },
+  })
   const { isLoading: createConfirming, isSuccess: createSuccess } = useWaitForTransactionReceipt({ hash: createHash })
 
   const totalRaw = milestones.reduce((acc, m) => {
@@ -83,53 +91,39 @@ export default function NewJobPage() {
     if (isWrongChain) { switchChain({ chainId: ARC_TESTNET_CHAIN_ID }); return }
     if (!canProceed) return
     setStep('approving')
-    try {
-      approveWrite({
-        address: USDC_ADDRESS,
-        abi: erc20Abi,
-        functionName: 'approve',
-        args: [CUTPAY_ADDRESS, totalRaw],
-        chainId: ARC_TESTNET_CHAIN_ID,
-      })
-    } catch (e) {
-      toast.error(parseOnchainError(e))
-      setStep('idle')
-    }
+    approveWrite({
+      address: USDC_ADDRESS,
+      abi: erc20Abi,
+      functionName: 'approve',
+      args: [CUTPAY_ADDRESS, totalRaw],
+      chainId: ARC_TESTNET_CHAIN_ID,
+    })
   }, [approveWrite, canProceed, isWrongChain, switchChain, totalRaw])
 
   const handleCreate = useCallback(() => {
     if (!canProceed) return
     setStep('creating')
     const amounts = milestones.map((m) => parseUsdc(m.amount))
-    try {
-      createWrite(
-        {
-          address: CUTPAY_ADDRESS,
-          abi: CUTPAY_ABI,
-          functionName: 'createJob',
-          args: [editor as `0x${string}`, title, amounts, BigInt(reviewWindow)],
-          chainId: ARC_TESTNET_CHAIN_ID,
+    createWrite(
+      {
+        address: CUTPAY_ADDRESS,
+        abi: CUTPAY_ABI,
+        functionName: 'createJob',
+        args: [editor as `0x${string}`, title, amounts, BigInt(reviewWindow)],
+        chainId: ARC_TESTNET_CHAIN_ID,
+      },
+      {
+        onSuccess: (hash) => {
+          toast.success('Job created!', {
+            description: (
+              <a href={txExplorerUrl(hash)} target="_blank" rel="noopener" style={{ color: 'var(--accent)' }}>
+                View on explorer
+              </a>
+            ) as unknown as string,
+          })
         },
-        {
-          onSuccess: (hash) => {
-            toast.success('Job created!', {
-              description: (
-                <a href={txExplorerUrl(hash)} target="_blank" rel="noopener" style={{ color: 'var(--accent)' }}>
-                  View on explorer
-                </a>
-              ) as unknown as string,
-            })
-          },
-          onError: (e) => {
-            toast.error(parseOnchainError(e))
-            setStep('idle')
-          },
-        },
-      )
-    } catch (e) {
-      toast.error(parseOnchainError(e))
-      setStep('idle')
-    }
+      },
+    )
   }, [createWrite, canProceed, editor, title, milestones, reviewWindow])
 
   useEffect(() => {

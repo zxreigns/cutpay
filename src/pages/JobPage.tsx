@@ -114,7 +114,9 @@ export default function JobPage() {
   const [tipAmount, setTipAmount] = useState('')
 
   // Generic write hook
-  const { writeContract, data: txHash, isPending, reset } = useWriteContract()
+  const { writeContract, data: txHash, isPending, reset } = useWriteContract({
+    mutation: { onError: (e) => toast.error(parseOnchainError(e)) },
+  })
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash: txHash })
 
   useEffect(() => {
@@ -137,7 +139,7 @@ export default function JobPage() {
   const exec = useCallback(
     (fn: () => void) => {
       if (isWrongChain) { switchChain({ chainId: ARC_TESTNET_CHAIN_ID }); return }
-      try { fn() } catch (e) { toast.error(parseOnchainError(e)) }
+      fn()
     },
     [isWrongChain, switchChain],
   )
@@ -220,10 +222,14 @@ export default function JobPage() {
   }
 
   // Tip — needs separate approve + tip
-  const { writeContract: tipWrite, data: tipHash, isPending: tipPending } = useWriteContract()
+  const { writeContract: tipWrite, data: tipHash, isPending: tipPending } = useWriteContract({
+    mutation: { onError: (e) => { toast.error(parseOnchainError(e)); setTipStep('idle') } },
+  })
   const { isLoading: tipConfirming, isSuccess: tipSuccess } = useWaitForTransactionReceipt({ hash: tipHash })
   const [tipStep, setTipStep] = useState<'idle' | 'approving' | 'tipping'>('idle')
-  const { writeContract: tipApproveWrite, data: tipApproveHash, isPending: tipApprovePending } = useWriteContract()
+  const { writeContract: tipApproveWrite, data: tipApproveHash, isPending: tipApprovePending } = useWriteContract({
+    mutation: { onError: (e) => { toast.error(parseOnchainError(e)); setTipStep('idle') } },
+  })
   const { isSuccess: tipApproveSuccess } = useWaitForTransactionReceipt({ hash: tipApproveHash })
 
   const doTipApprove = () => {
@@ -257,7 +263,9 @@ export default function JobPage() {
   }, [tipSuccess, refetch])
 
   // Withdraw
-  const { writeContract: withdrawWrite, data: withdrawHash, isPending: withdrawPending } = useWriteContract()
+  const { writeContract: withdrawWrite, data: withdrawHash, isPending: withdrawPending } = useWriteContract({
+    mutation: { onError: (e) => toast.error(parseOnchainError(e)) },
+  })
   const { isLoading: withdrawConfirming, isSuccess: withdrawSuccess } = useWaitForTransactionReceipt({ hash: withdrawHash })
   useEffect(() => { if (withdrawSuccess) { refetchPW(); toast.success('Withdrawn to wallet') } }, [withdrawSuccess, refetchPW])
 

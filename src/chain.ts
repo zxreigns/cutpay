@@ -26,6 +26,11 @@ const arcMainnet: Chain = {
       url: 'https://explorer.arc.io',
     },
   },
+  fees: {
+    // Arc enforces a 20 gwei maxFeePerGas floor; use a 1.5x multiplier so
+    // viem's fee estimation stays safely above the minimum.
+    baseFeeMultiplier: 1.5,
+  },
 }
 
 export const ACTIVE_CHAIN: Chain = ARC_NETWORK === 'mainnet' ? arcMainnet : arcTestnet
