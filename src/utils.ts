@@ -85,14 +85,14 @@ export function jobStatusLabel(s: number): string {
 
 export function milestoneStatusLabel(s: number): { label: string; color: string } {
   const map: Record<number, { label: string; color: string }> = {
-    0: { label: 'Pending', color: '#9A9A9F' },
-    1: { label: 'Submitted', color: '#F5B227' },
-    2: { label: 'Released', color: '#7BD88F' },
-    3: { label: 'Refunded', color: '#9A9A9F' },
-    4: { label: 'Split', color: '#7BD88F' },
-    5: { label: 'Disputed', color: '#F26B6B' },
+    0: { label: 'Pending', color: '#7c7e88' },
+    1: { label: 'Submitted', color: '#6d8dff' },
+    2: { label: 'Released', color: '#3ee0a0' },
+    3: { label: 'Refunded', color: '#7c7e88' },
+    4: { label: 'Split', color: '#3ee0a0' },
+    5: { label: 'Disputed', color: '#ff6b6b' },
   }
-  return map[s] ?? { label: 'Unknown', color: '#9A9A9F' }
+  return map[s] ?? { label: 'Unknown', color: '#7c7e88' }
 }
 
 export const REVIEW_WINDOWS = [

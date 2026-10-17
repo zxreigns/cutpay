@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import NavBar from './components/NavBar'
 import LandingPage from './pages/LandingPage'
 import NewJobPage from './pages/NewJobPage'
@@ -6,14 +7,16 @@ import JobPage from './pages/JobPage'
 import EditorPassportPage from './pages/EditorPassportPage'
 import DashboardPage from './pages/DashboardPage'
 
-// Spin keyframe for loader
-const spinStyle = document.createElement('style')
-spinStyle.textContent = `@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`
-document.head.appendChild(spinStyle)
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => { window.scrollTo({ top: 0 }) }, [pathname])
+  return null
+}
 
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <div style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
         <NavBar />
         <Routes>

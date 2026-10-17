@@ -1,189 +1,96 @@
 import { Link } from 'react-router-dom'
 import { useAccount, useReadContract } from 'wagmi'
-import { Plus } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Plus, ArrowRight, Lock } from 'lucide-react'
 import { CUTPAY_ABI, CUTPAY_ADDRESS, ARC_TESTNET_CHAIN_ID } from '../contract'
 import { formatUsdc, formatAddress, jobStatusLabel } from '../utils'
-import Card, { SectionLabel } from '../components/Card'
+import Timeline, { type Clip, statusFromCode } from '../components/Timeline'
 
 export default function DashboardPage() {
   const { address } = useAccount()
-
-  const { data: clientJobIds } = useReadContract({
-    address: CUTPAY_ADDRESS,
-    abi: CUTPAY_ABI,
-    functionName: 'jobsByClient',
-    args: address ? [address] : undefined,
-    chainId: ARC_TESTNET_CHAIN_ID,
-    query: { enabled: !!address },
-  }) as { data: bigint[] | undefined }
-
-  const { data: editorJobIds } = useReadContract({
-    address: CUTPAY_ADDRESS,
-    abi: CUTPAY_ABI,
-    functionName: 'jobsByEditor',
-    args: address ? [address] : undefined,
-    chainId: ARC_TESTNET_CHAIN_ID,
-    query: { enabled: !!address },
-  }) as { data: bigint[] | undefined }
+  const { data: clientJobIds } = useReadContract({ address: CUTPAY_ADDRESS, abi: CUTPAY_ABI, functionName: 'jobsByClient', args: address ? [address] : undefined, chainId: ARC_TESTNET_CHAIN_ID, query: { enabled: !!address } }) as { data: bigint[] | undefined }
+  const { data: editorJobIds } = useReadContract({ address: CUTPAY_ADDRESS, abi: CUTPAY_ABI, functionName: 'jobsByEditor', args: address ? [address] : undefined, chainId: ARC_TESTNET_CHAIN_ID, query: { enabled: !!address } }) as { data: bigint[] | undefined }
 
   if (!address) {
     return (
-      <main style={{ maxWidth: 700, margin: '40px auto', padding: '0 20px', textAlign: 'center' }}>
-        <p style={{ color: 'var(--muted)' }}>Connect your wallet to see your jobs.</p>
+      <main className="wrap" style={{ padding: '80px 0', textAlign: 'center' }}>
+        <Lock size={18} color="var(--muted)" />
+        <p style={{ color: 'var(--ink-2)', margin: '10px 0 16px' }}>Connect a wallet to see your jobs and your passport.</p>
+        <button onClick={() => window.dispatchEvent(new Event('cutpay:connect'))} className="btn btn-primary">Connect wallet</button>
       </main>
     )
   }
 
+  const asClient = [...(clientJobIds ?? [])].reverse()
+  const asEditor = [...(editorJobIds ?? [])].reverse()
+
   return (
-    <main style={{ maxWidth: 700, margin: '0 auto', padding: '40px 20px 80px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
+    <main className="wrap" style={{ paddingTop: 36, paddingBottom: 96 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap', marginBottom: 26 }}>
         <div>
-          <h1 className="display" style={{ fontSize: 28, fontWeight: 700, color: 'var(--ink)', marginBottom: 4 }}>
-            Dashboard
-          </h1>
-          <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>
-            {formatAddress(address)}
-          </p>
+          <div className="eyebrow" style={{ marginBottom: 8 }}>Signed in as <span className="mono" style={{ color: 'var(--ink)' }}>{formatAddress(address)}</span></div>
+          <h1 className="display" style={{ fontSize: 'clamp(32px, 4.5vw, 48px)', lineHeight: 1, margin: 0 }}>My <em>jobs.</em></h1>
         </div>
-        <Link
-          to="/new"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '9px 16px',
-            background: 'var(--accent)',
-            color: '#0B0B0C',
-            borderRadius: 99,
-            textDecoration: 'none',
-            fontSize: 13,
-            fontWeight: 700,
-          }}
-        >
-          <Plus size={15} /> New Job
-        </Link>
-      </div>
-
-      {/* Jobs as client */}
-      <div style={{ marginBottom: 32 }}>
-        <SectionLabel>As Client</SectionLabel>
-        <div style={{ marginTop: 12 }}>
-          {!clientJobIds || clientJobIds.length === 0 ? (
-            <Card style={{ textAlign: 'center', padding: '28px 20px' }}>
-              <p style={{ color: 'var(--muted)', fontSize: 14, margin: 0 }}>No jobs posted yet.</p>
-              <Link
-                to="/new"
-                style={{ display: 'inline-block', marginTop: 12, fontSize: 13, color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}
-              >
-                Post your first job
-              </Link>
-            </Card>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[...clientJobIds].reverse().map((id) => (
-                <DashJobCard key={id.toString()} jobId={id} />
-              ))}
-            </div>
-          )}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Link to={`/editor/${address}`} className="btn btn-ghost">My passport</Link>
+          <Link to="/new" className="btn btn-primary"><Plus size={15} /> New job</Link>
         </div>
       </div>
 
-      {/* Jobs as editor */}
-      <div>
-        <SectionLabel>As Editor</SectionLabel>
-        <div style={{ marginTop: 12 }}>
-          {!editorJobIds || editorJobIds.length === 0 ? (
-            <Card style={{ textAlign: 'center', padding: '28px 20px' }}>
-              <p style={{ color: 'var(--muted)', fontSize: 14, margin: 0 }}>No editing jobs yet.</p>
-            </Card>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[...editorJobIds].reverse().map((id) => (
-                <DashJobCard key={id.toString()} jobId={id} />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div style={{ marginTop: 40, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
-        <span style={{ fontSize: 11, color: 'var(--muted)' }}>Built on Arc · settled in USDC</span>
-      </div>
+      <Section title="Hired me" sub="jobs where you are the editor" ids={asEditor} empty="No one has hired you here yet. Share your passport link with a client." me={address} />
+      <Section title="I'm paying" sub="jobs you funded" ids={asClient} empty="You haven't funded a job yet." me={address} />
     </main>
   )
 }
 
-function DashJobCard({ jobId }: { jobId: bigint }) {
-  const { data: job } = useReadContract({
-    address: CUTPAY_ADDRESS,
-    abi: CUTPAY_ABI,
-    functionName: 'getJob',
-    args: [jobId],
-    chainId: ARC_TESTNET_CHAIN_ID,
-  }) as { data: {
-    title: string
-    client: string
-    editor: string
-    totalFunded: bigint
-    totalReleased: bigint
-    status: number
-    milestones: { status: number }[]
-  } | undefined }
-
-  if (!job) {
-    return (
-      <div style={{ padding: '10px 12px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, opacity: 0.5 }}>
-        <span style={{ fontSize: 13, color: 'var(--muted)' }}>Loading...</span>
+function Section({ title, sub, ids, empty, me }: { title: string; sub: string; ids: bigint[]; empty: string; me: `0x${string}` }) {
+  return (
+    <section style={{ marginBottom: 34 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 12 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>{title}</h2>
+        <span style={{ fontSize: 12, color: 'var(--muted)' }}>{sub} · {ids.length}</span>
       </div>
-    )
-  }
+      {ids.length === 0 ? (
+        <div className="panel panel-pad" style={{ color: 'var(--muted)', fontSize: 14 }}>{empty}</div>
+      ) : (
+        <div style={{ display: 'grid', gap: 10 }}>
+          {ids.map((id, i) => <JobRow key={id.toString()} jobId={id} me={me} delay={i * 0.04} />)}
+        </div>
+      )}
+    </section>
+  )
+}
 
-  const releasedCount = job.milestones.filter((m) => m.status === 2 || m.status === 4).length
-  const progressPct = job.totalFunded > 0n ? Number((job.totalReleased * 100n) / job.totalFunded) : 0
+function JobRow({ jobId, me, delay }: { jobId: bigint; me: `0x${string}`; delay: number }) {
+  const { data: job } = useReadContract({ address: CUTPAY_ADDRESS, abi: CUTPAY_ABI, functionName: 'getJob', args: [jobId], chainId: ARC_TESTNET_CHAIN_ID }) as {
+    data: { title: string; client: string; editor: string; totalFunded: bigint; totalReleased: bigint; status: number; milestones: { status: number; amount: bigint }[] } | undefined
+  }
+  if (!job) return <div className="panel" style={{ height: 96, opacity: 0.4 }} />
+
+  const clips: Clip[] = job.milestones.map((m, i) => ({ name: `M${i + 1}`, amount: Number(m.amount) / 1e6, status: statusFromCode(m.status) }))
+  const other = job.client.toLowerCase() === me.toLowerCase() ? job.editor : job.client
+  const needsYou = job.milestones.some((m) => (m.status === 1 && job.client.toLowerCase() === me.toLowerCase()) || (m.status === 5 && job.editor.toLowerCase() === me.toLowerCase()))
+    || (job.status === 0 && job.editor.toLowerCase() === me.toLowerCase() && job.milestones.some((m) => m.status === 0) && !job.milestones.some((m) => m.status === 1 || m.status === 5))
 
   return (
-    <Link
-      to={`/job/${jobId}`}
-      style={{
-        display: 'block',
-        padding: '14px 16px',
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 8,
-        textDecoration: 'none',
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 10 }}>
-        <div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>{job.title}</div>
-          <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>
-            #{jobId.toString()} &nbsp;·&nbsp; {releasedCount}/{job.milestones.length} milestones
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}>
+      <Link to={`/job/${jobId.toString()}`} className="panel" style={{ display: 'block', padding: '14px 16px', textDecoration: 'none', transition: 'border-color .15s' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 2 }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 16, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{job.title}</div>
+            <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>#{jobId.toString()} · with <span className="mono">{formatAddress(other)}</span> · {jobStatusLabel(job.status)}</div>
+          </div>
+          <div style={{ textAlign: 'right', flex: 'none' }}>
+            <div className="mono" style={{ fontSize: 15, color: 'var(--money)' }}>${formatUsdc(job.totalReleased)}</div>
+            <div className="mono" style={{ fontSize: 11, color: 'var(--muted)' }}>of ${formatUsdc(job.totalFunded)}</div>
           </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-          <span
-            className="mono"
-            style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)', fontVariantNumeric: 'tabular-nums' }}
-          >
-            ${formatUsdc(job.totalFunded)}
-          </span>
-          <span
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              color: job.status === 1 ? 'var(--success)' : job.status === 0 ? 'var(--accent)' : 'var(--muted)',
-            }}
-          >
-            {jobStatusLabel(job.status)}
-          </span>
+        <Timeline clips={clips} compact showMoney={false} minWidth={0} playhead={job.totalFunded > 0n ? Number(job.totalReleased) / Number(job.totalFunded) : 0} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
+          {needsYou ? <span className="chip chip-accent" style={{ height: 22, fontSize: 11 }}>Your move</span> : <span />}
+          <span style={{ fontSize: 12, color: 'var(--ink-2)', display: 'inline-flex', gap: 4, alignItems: 'center' }}>Open review room <ArrowRight size={12} /></span>
         </div>
-      </div>
-      {/* Progress bar */}
-      <div style={{ height: 3, background: 'var(--border)', borderRadius: 99, overflow: 'hidden' }}>
-        <div style={{ width: `${progressPct}%`, height: '100%', background: 'var(--accent)', borderRadius: 99 }} />
-      </div>
-    </Link>
+      </Link>
+    </motion.div>
   )
 }

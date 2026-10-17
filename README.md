@@ -26,6 +26,20 @@ CutPay lets a client fund an entire project up front — split across milestones
 
 ---
 
+## The product: the timeline is the escrow
+
+CutPay's front end is built the way an editor already thinks — as a timeline.
+
+- **Landing** — a live NLE-style timeline: Draft / Revision / Final sit as clips on a track, a playhead sweeps, and as it crosses each approved cut the USDC counter moves from the client's escrow to the editor's wallet. The numbers beside it (jobs, USDC escrowed, USDC released, editors paid) are read live from the contract.
+- **Build the cut** (`/new`) — milestones are laid out as clips as you type; presets for common jobs; one Approve + one Fund transaction locks the whole budget.
+- **Review Room** (`/job/:id`) — a frame viewer (revealed masters play inline), the job's timeline with the playhead on the current cut, timecoded notes the client keeps in-browser and copies to the editor, and a role-aware action deck. Approving a cut is the release moment: the clip turns green and the amount is shown leaving escrow on Arc, with the transaction link. Auto-release, dispute / 50-50 split and pay-to-unlock all live in the same room.
+- **Editor passport** (`/editor/:address`) — a shareable, tilt-on-hover card whose numbers (jobs done, USDC earned, tips, on-time %) come only from the contract; "Hire this editor" pre-fills a new job.
+- **Instant wallet** — one click, no extension; made for phones.
+
+Typography: Instrument Serif + Geist + Geist Mono. Motion: Framer Motion. Palette: near-black, bone white, one electric blue for the in-review state, mint for money released, red reserved for the playhead.
+
+---
+
 ## Instant wallet (phones, no extension)
 
 Most of the editors CutPay is built for work from a phone and never installed MetaMask. CutPay ships a built-in **Instant wallet**: an opt-in wagmi connector that generates a private key in the browser on the user's explicit click, keeps it in `localStorage`, and signs with a viem `LocalAccount`. Nothing is generated on a fresh visit; a return visit with a stored key reconnects on its own. The wallet panel shows the address and live USDC balance and lets the user copy the address, export the key (two confirmations) or import an existing one.

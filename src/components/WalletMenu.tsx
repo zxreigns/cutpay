@@ -39,7 +39,7 @@ const panelStyle: React.CSSProperties = {
   zIndex: 101,
   background: 'var(--surface)',
   border: '1px solid var(--border)',
-  borderRadius: 12,
+  borderRadius: 18,
   padding: 28,
   width: 'min(420px, calc(100vw - 32px))',
   maxHeight: 'calc(100dvh - 64px)',
@@ -84,9 +84,9 @@ const ghostBtn: React.CSSProperties = {
 const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '9px 12px',
-  background: '#0B0B0C',
+  background: 'var(--accent-ink)',
   border: '1px solid var(--border)',
-  borderRadius: 6,
+  borderRadius: 10,
   color: 'var(--ink)',
   fontSize: 13,
   fontFamily: 'DM Mono, monospace',
@@ -128,48 +128,35 @@ export function ConnectModal({ onClose }: { onClose: () => void }) {
     <>
       <Overlay onClose={onClose} />
       <div style={panelStyle} role="dialog" aria-modal aria-label="Connect wallet">
-        <h2 className="display" style={{ fontSize: 22, fontWeight: 700, marginBottom: 6, color: 'var(--ink)' }}>
-          Connect wallet
+        <h2 className="display" style={{ fontSize: 30, marginBottom: 6, color: 'var(--ink)', lineHeight: 1 }}>
+          Connect a <em>wallet.</em>
         </h2>
         <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 24 }}>
-          Use a browser extension or get started instantly — no extension needed.
+          Try CutPay in one click, or use the extension you already have.
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* Instant wallet — the one-click path */}
+          <button
+            onClick={connectInstant}
+            disabled={isPending || !instantConnector}
+            style={{ ...btnBase, background: 'var(--ink)', borderColor: 'var(--ink)', color: 'var(--bg)' }}
+          >
+            <InstantIcon />
+            Instant wallet
+            <span style={{ fontSize: 11, fontWeight: 500, opacity: 0.6, marginLeft: 2 }}>— one click, lives in this browser</span>
+          </button>
           {/* Browser wallet */}
           <button
             onClick={connectInjected}
             disabled={isPending || !injectedConnector}
-            style={{
-              ...btnBase,
-              background: 'var(--accent)',
-              borderColor: 'var(--accent)',
-              color: '#0B0B0C',
-              opacity: !injectedConnector ? 0.45 : 1,
-            }}
+            style={{ ...btnBase, background: 'transparent', color: 'var(--ink)', opacity: !injectedConnector ? 0.45 : 1 }}
           >
             <BrowserWalletIcon />
             Browser wallet
             {!injectedConnector && (
               <span style={{ fontSize: 11, fontWeight: 400, opacity: 0.7 }}>(no extension found)</span>
             )}
-          </button>
-
-          {/* Instant wallet */}
-          <button
-            onClick={connectInstant}
-            disabled={isPending || !instantConnector}
-            style={{
-              ...btnBase,
-              background: 'transparent',
-              color: 'var(--ink)',
-            }}
-          >
-            <InstantIcon />
-            Instant wallet
-            <span style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 400, marginLeft: 2 }}>
-              — stored in this browser
-            </span>
           </button>
         </div>
 
@@ -255,9 +242,9 @@ export function WalletPanel({ onClose }: { onClose: () => void }) {
                 textTransform: 'uppercase',
                 padding: '2px 7px',
                 borderRadius: 99,
-                background: 'rgba(245,178,39,0.1)',
+                background: 'rgba(109,141,255,0.1)',
                 color: 'var(--accent)',
-                border: '1px solid rgba(245,178,39,0.2)',
+                border: '1px solid rgba(109,141,255,0.2)',
               }}
             >
               Stored in this browser
@@ -268,9 +255,9 @@ export function WalletPanel({ onClose }: { onClose: () => void }) {
         {/* Address + balance */}
         <div
           style={{
-            background: '#0B0B0C',
+            background: 'var(--accent-ink)',
             border: '1px solid var(--border)',
-            borderRadius: 8,
+            borderRadius: 12,
             padding: '14px 16px',
             marginBottom: 20,
           }}
@@ -292,7 +279,7 @@ export function WalletPanel({ onClose }: { onClose: () => void }) {
                 gap: 4,
                 fontSize: 12,
                 padding: '4px 8px',
-                borderRadius: 6,
+                borderRadius: 10,
               }}
             >
               <Copy size={12} />
@@ -311,9 +298,9 @@ export function WalletPanel({ onClose }: { onClose: () => void }) {
         {/* Receive instructions */}
         <div
           style={{
-            background: 'rgba(245,178,39,0.06)',
-            border: '1px solid rgba(245,178,39,0.18)',
-            borderRadius: 8,
+            background: 'rgba(109,141,255,0.06)',
+            border: '1px solid rgba(109,141,255,0.18)',
+            borderRadius: 12,
             padding: '12px 14px',
             marginBottom: 20,
             fontSize: 12,
@@ -342,7 +329,7 @@ export function WalletPanel({ onClose }: { onClose: () => void }) {
               style={{
                 background: 'rgba(242,107,107,0.06)',
                 border: '1px solid rgba(242,107,107,0.2)',
-                borderRadius: 8,
+                borderRadius: 12,
                 padding: '12px 14px',
                 marginBottom: 12,
                 display: 'flex',
@@ -404,7 +391,7 @@ export function WalletPanel({ onClose }: { onClose: () => void }) {
                 style={{
                   background: 'rgba(242,107,107,0.06)',
                   border: '1px solid rgba(242,107,107,0.2)',
-                  borderRadius: 8,
+                  borderRadius: 12,
                   padding: '10px 14px',
                   marginBottom: 8,
                   fontSize: 12,
@@ -425,7 +412,7 @@ export function WalletPanel({ onClose }: { onClose: () => void }) {
                 <p style={{ fontSize: 12, color: 'var(--danger)', marginTop: 6, marginBottom: 0 }}>{importError}</p>
               )}
               <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                <button onClick={handleImport} style={{ ...btnBase, background: 'var(--accent)', color: '#0B0B0C', borderColor: 'var(--accent)', flex: 1 }}>
+                <button onClick={handleImport} style={{ ...btnBase, background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)', flex: 1 }}>
                   Import
                 </button>
                 <button onClick={() => { setShowImport(false); setImportInput(''); setImportError('') }} style={{ ...ghostBtn, flex: 1 }}>
